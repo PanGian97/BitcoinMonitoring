@@ -11,7 +11,7 @@ h3 {
 }
 /* Bitcoin Price Styles */
 .price-container {
-    max-width: 800px;
+    max-width: 1300px;
     margin: 50px auto;
     padding: 20px;
     background-color: #fff;
@@ -26,9 +26,8 @@ h3 {
 button {
     padding: 10px 20px;
     margin: 0 10px;
-    border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+   
 }
 
 button:focus {
@@ -54,7 +53,7 @@ button:focus {
     gap: 10px;
 }
 .avg-no-data {
-    color: grey;
+    color: dodgerblue;
     font-size: 0.8em;  /* adjust size as desired */
 }
 

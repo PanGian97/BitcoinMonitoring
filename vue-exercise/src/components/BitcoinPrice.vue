@@ -7,9 +7,9 @@
                 <button @click="changeCurrency('USD')" :class="{ 'btn-active': storedCurrency === 'USD' }">USD</button>
             </div>
         </div>
-        
+
         <div class="average-text">
-            <h3>Average Price:</h3>
+            <h3>Average Price Last:</h3>
             <div class="timeframe">
                 <span>5 minutes: </span>
                 <span v-if="avgLast5 !== null">{{ avgLast5 }} {{ storedCurrency }}</span>
@@ -27,7 +27,7 @@
                 <span v-else class="avg-no-data">Not enough data yet</span>
             </div>
         </div>
-       
+
         <apexchart type="line" height="350" :options="chartOptions" :series="chartSeries"></apexchart>
     </div>
 </template>
@@ -55,8 +55,20 @@ export default {
                     id: "bitcoin-price",
                 },
                 xaxis: {
+                    type: 'datetime',
                     categories: [],
+                    labels: {
+
+                        datetimeUTC: false,
+                        format: ' MMM dd->HH:mm:ss ',
+                        show: true
+                    }
                 },
+                tooltip: {
+                    x: {
+                        format: "HH:mm:ss"
+                    }
+                }
             },
             chartSeries: [
                 {
@@ -72,16 +84,13 @@ export default {
                 .get(`https://api.coinbase.com/v2/prices/spot?currency=${this.storedCurrency}`)
                 .then((response) => {
                     this.bitcoinPrice = response.data.data.amount;
-                    console.log(this.bitcoinPrice)
-
-                    this.priceHistory.unshift({
-                        time: new Date().toLocaleTimeString(),
+                    this.priceHistory.push({
+                        time: new Date().getTime(), // Current timestamp
                         price: this.bitcoinPrice
                     });
 
-
                     if (this.priceHistory.length > 60) {
-                        this.priceHistory.pop();
+                        this.priceHistory.shift();
                     }
                     // Calculate the averages
                     if (this.priceHistory.length >= 5) {
@@ -99,23 +108,29 @@ export default {
                     console.error("There was an error fetching the data!", error);
                 });
         },
-        changeCurrency(currency) {
-            localStorage.setItem('selectedCurrency', currency); // Save selected currency to localStorage
-            location.reload(); // Refresh the page
-        },
-        calculateAverage(timestampNum) {
-            let sum = 0
-            console.log(this.priceHistory[0].price)
-            for (let i = 0; i < timestampNum; i++) {
+        calculateAverage(numOfValues) {
+            let sum = 0;
+
+            for (let i = this.priceHistory.length - 1; i >= this.priceHistory.length - numOfValues; i--) {
                 sum += parseFloat(this.priceHistory[i].price);
             }
 
-            return (sum / timestampNum).toFixed(2);  // 2 decimal places
+            return (sum / numOfValues).toFixed(2);  // 2 decimal places
         },
+        changeCurrency(currency) {
+            localStorage.setItem('selectedCurrency', currency);
+            location.reload();
+        },
+
         updateChart() {
-            this.chartOptions.xaxis.categories = this.priceHistory.map(
-                (pricePoint) => pricePoint.time
-            );
+            this.chartOptions = {
+                ...this.chartOptions,
+                xaxis: {
+                    ...this.chartOptions.xaxis,
+                    categories: this.priceHistory.map(pricePoint => pricePoint.time)
+                },
+           };
+           //this.chartOptions.xaxis.categories = this.priceHistory.map(pricePoint => pricePoint.time);  Shouldn't this also work?
             this.chartSeries[0].data = this.priceHistory.map((pricePoint) =>
                 parseFloat(pricePoint.price)
             );

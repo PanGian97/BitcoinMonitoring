@@ -14,11 +14,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.gradient-background {
-    background: linear-gradient(dodgerblue, white); /* Change the direction or colors as needed */
-    height: 100vh; /* to ensure full vertical height coverage */
-}
-
-</style>
