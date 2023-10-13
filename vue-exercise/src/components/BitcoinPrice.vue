@@ -1,19 +1,42 @@
 <template>
     <div class="price-container">
-        <p class="price-text">Current Bitcoin Price in {{ storedCurrency }}: {{ bitcoinPrice }}</p>
-        <button @click="changeCurrency('EUR')">EUR</button>
-        <button @click="changeCurrency('USD')">USD</button>
-        <p class="average-text">Average (last 3): {{ avgLast3 }} {{ storedCurrency }}</p>
-        <p class="average-text">Average (last 5): {{ avgLast5 }} {{ storedCurrency }}</p>
-        <p class="average-text">Average (last 8): {{ avgLast8 }} {{ storedCurrency }}</p>
+        <div class="header">
+            <p class="price-text">Current Bitcoin Price: {{ bitcoinPrice }} {{ storedCurrency }}</p>
+            <div class="currency-buttons">
+                <button @click="changeCurrency('EUR')" :class="{ 'btn-active': storedCurrency === 'EUR' }">EUR</button>
+                <button @click="changeCurrency('USD')" :class="{ 'btn-active': storedCurrency === 'USD' }">USD</button>
+            </div>
+        </div>
+        
+        <div class="average-text">
+            <h3>Average Price:</h3>
+            <div class="timeframe">
+                <span>5 minutes: </span>
+                <span v-if="avgLast5 !== null">{{ avgLast5 }} {{ storedCurrency }}</span>
+                <span v-else class="avg-no-data">Not enough data yet</span>
+
+            </div>
+            <div class="timeframe">
+                <span>30 minutes: </span>
+                <span v-if="avgLast5 !== null">{{ avgLast30 }} {{ storedCurrency }}</span>
+                <span v-else class="avg-no-data">Not enough data yet</span>
+            </div>
+            <div class="timeframe">
+                <span>60 minutes: </span>
+                <span v-if="avgLast5 !== null">{{ avgLast60 }} {{ storedCurrency }}</span>
+                <span v-else class="avg-no-data">Not enough data yet</span>
+            </div>
+        </div>
+       
         <apexchart type="line" height="350" :options="chartOptions" :series="chartSeries"></apexchart>
     </div>
 </template>
+
   
 <script>
 import axios from "axios";
 import VueApexCharts from "vue3-apexcharts";
-
+import '@/assets/styles.css';
 export default {
     components: {
         apexchart: VueApexCharts,
@@ -21,12 +44,12 @@ export default {
     name: "BitcoinPrice",
     data() {
         return {
-            storedCurrency:null,
+            storedCurrency: 'USD',//default
             bitcoinPrice: null,
             priceHistory: [],
-            avgLast3: null,
             avgLast5: null,
-            avgLast8: null,
+            avgLast30: null,
+            avgLast60: null,
             chartOptions: {
                 chart: {
                     id: "bitcoin-price",
@@ -57,18 +80,18 @@ export default {
                     });
 
 
-                    if (this.priceHistory.length > 20) {
+                    if (this.priceHistory.length > 60) {
                         this.priceHistory.pop();
                     }
                     // Calculate the averages
-                    if (this.priceHistory.length >= 3) {
-                        this.avgLast3 = this.calculateAverage(3);
-                    }
                     if (this.priceHistory.length >= 5) {
                         this.avgLast5 = this.calculateAverage(5);
                     }
-                    if (this.priceHistory.length >= 8) {
-                        this.avgLast8 = this.calculateAverage(8);
+                    if (this.priceHistory.length >= 30) {
+                        this.avgLast30 = this.calculateAverage(30);
+                    }
+                    if (this.priceHistory.length >= 60) {
+                        this.avgLast60 = this.calculateAverage(60);
                     }
                     this.updateChart()
                 })
@@ -111,25 +134,4 @@ export default {
     },
 };
 </script>
-  
-<style scoped>
-body {
-    margin: 0;
-    padding: 0;
-}
-
-.price-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50vh;
-    background-color: white;
-}
-
-
-.price-text {
-    font-size: 32px;
-    color: black;
-}
-</style>
   

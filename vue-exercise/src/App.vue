@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="gradient-background">
     <BitcoinPrice />
   </div>
 </template>
@@ -16,5 +16,9 @@ export default {
 </script>
 
 <style>
-/* Global CSS styles */
+.gradient-background {
+    background: linear-gradient(dodgerblue, white); /* Change the direction or colors as needed */
+    height: 100vh; /* to ensure full vertical height coverage */
+}
+
 </style>
